@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Радио Свобода</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+          /*  display: flex;*/
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .radio-player {
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            text-align: center;
+        }
+        button {
+            margin: 5px;
+        }
+        #status {
+            margin-top: 10px;
+        }
+        #buffering {
+            visibility: hidden;
+            font-style: italic;
+        }
+        h1{
+          text-align: center;
+          color: grey;
+        }
+    </style>
+</head>
+<body>
+<h1>berlandbor</h1>
+<div class="radio-player">
+    <h2>Радио Свобода</h2>
+    <button id="playButton">Play</button>
+    <button id="pauseButton">Pause</button>
+    <button id="muteButton">Mute</button>
+    <br>
+    Volume: <input type="range" id="volumeSlider" min="0" max="1" step="0.1">
+    <div id="status">Status: Stopped</div>
+    <div id="buffering">Buffering...</div>
+</div>
+
+<script>
+    const radioURL = "https://n0d.radiojar.com/hcrb063nn3quv?rj-ttl=5&rj-tok=AAABf0cR0TcAuolkyeDIQy7HGg";
+    const radioStream = new Audio(radioURL);
+    const statusEl = document.getElementById('status');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const bufferingEl = document.getElementById('buffering');
+
+    if(localStorage.getItem('volume')) {
+        radioStream.volume = localStorage.getItem('volume');
+        volumeSlider.value = radioStream.volume;
+    } else {
+        radioStream.volume = 0.5; // Default volume
+    }
+
+    document.getElementById('playButton').addEventListener('click', function() {
+        radioStream.play();
+    });
+
+    document.getElementById('pauseButton').addEventListener('click', function() {
+        radioStream.pause();
+    });
+
+    document.getElementById('muteButton').addEventListener('click', function() {
+        if(radioStream.muted) {
+            radioStream.muted = false;
+        } else {
+            radioStream.muted = true;
+        }
+    });
+
+    volumeSlider.addEventListener('input', function() {
+        radioStream.volume = volumeSlider.value;
+        localStorage.setItem('volume', volumeSlider.value);
+    });
+
+    radioStream.addEventListener('play', function() {
+        statusEl.textContent = "Status: Playing";
+    });
+
+    radioStream.addEventListener('pause', function() {
+        statusEl.textContent = "Status: Paused";
+    });
+
+    radioStream.addEventListener('stalled', function() {
+        bufferingEl.style.visibility = 'visible';
+    });
+
+    radioStream.addEventListener('playing', function() {
+        bufferingEl.style.visibility = 'hidden';
+    });
+
+    radioStream.addEventListener('error', function() {
+        statusEl.textContent = "Status: Error occurred";
+        setTimeout(function() {
+            radioStream.load();
+            radioStream.play();
+        }, 5000);
+    });
+</script>
+
+</body>
+</html>
