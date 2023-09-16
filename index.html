@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced JS Radio Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .radio-player {
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+        button {
+            margin: 5px;
+        }
+        #status {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="radio-player">
+    <button id="playButton">Play</button>
+    <button id="pauseButton">Pause</button>
+    <br>
+    Volume: <input type="range" id="volumeSlider" min="0" max="1" step="0.1">
+    <div id="status">Status: Stopped</div>
+</div>
+
+<script>
+    const radioURL = "https://n0d.radiojar.com/hcrb063nn3quv?rj-ttl=5&rj-tok=AAABf0cR0TcAuolkyeDIQy7HGg";
+    const radioStream = new Audio(radioURL);
+    const statusEl = document.getElementById('status');
+    const volumeSlider = document.getElementById('volumeSlider');
+
+    // Check if a volume setting exists in localStorage
+    if(localStorage.getItem('volume')) {
+        radioStream.volume = localStorage.getItem('volume');
+        volumeSlider.value = radioStream.volume;
+    } else {
+        radioStream.volume = 0.5; // Default volume
+    }
+
+    document.getElementById('playButton').addEventListener('click', function() {
+        radioStream.play();
+    });
+
+    document.getElementById('pauseButton').addEventListener('click', function() {
+        radioStream.pause();
+    });
+
+    volumeSlider.addEventListener('input', function() {
+        radioStream.volume = volumeSlider.value;
+        localStorage.setItem('volume', volumeSlider.value);
+    });
+
+    // Handling stream events for status indication
+    radioStream.addEventListener('play', function() {
+        statusEl.textContent = "Status: Playing";
+    });
+
+    radioStream.addEventListener('pause', function() {
+        statusEl.textContent = "Status: Paused";
+    });
+
+    radioStream.addEventListener('stalled', function() {
+        statusEl.textContent = "Status: Buffering...";
+    });
+
+    radioStream.addEventListener('error', function() {
+        statusEl.textContent = "Status: Error occurred";
+        setTimeout(function() { // Attempt to reconnect after 5 seconds
+            radioStream.load();
+            radioStream.play();
+        }, 5000);
+    });
+</script>
+
+</body>
+</html>
